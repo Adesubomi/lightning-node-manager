@@ -2,8 +2,8 @@ package lightning
 
 import (
 	"fmt"
-	configPkg "github.com/Adesubomi/magic-ayo-api/pkg/config"
-	logPkg "github.com/Adesubomi/magic-ayo-api/pkg/log"
+	configPkg "github.com/Adesubomi/lightning-node-manager/pkg/config"
+	logPkg "github.com/Adesubomi/lightning-node-manager/pkg/log"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -71,16 +71,4 @@ func newClient(lnConfig configPkg.LightningConfig) (*LNClient, error) {
 	lndClient.Client = client
 
 	return lndClient, nil
-}
-
-func NewSenderLnClient(config *configPkg.Config) (*LNClient, error) {
-	fmt.Println("")
-	fmt.Println("  [...] Connecting to LND over gRPC - Sender")
-	return newClient(config.LnSendNode)
-}
-
-func NewRecipientLnClient(config *configPkg.Config) (*LNClient, error) {
-	fmt.Println("")
-	fmt.Println("  [...] Connecting to LND over gRPC - Recipient")
-	return newClient(config.LnReceiveNode)
 }

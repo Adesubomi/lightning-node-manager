@@ -2,8 +2,8 @@ package auth
 
 import (
 	"encoding/json"
-	logPkg "github.com/Adesubomi/magic-ayo-api/pkg/log"
-	utilPkg "github.com/Adesubomi/magic-ayo-api/pkg/util"
+	logPkg "github.com/Adesubomi/lightning-node-manager/pkg/log"
+	utilPkg "github.com/Adesubomi/lightning-node-manager/pkg/util"
 	"github.com/go-redis/redis"
 	"github.com/golang-jwt/jwt"
 	"time"

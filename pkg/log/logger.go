@@ -3,8 +3,9 @@ package log
 import (
 	"errors"
 	"fmt"
-	configPkg "github.com/Adesubomi/magic-ayo-api/pkg/config"
+	configPkg "github.com/Adesubomi/lightning-node-manager/pkg/config"
 	"github.com/getsentry/sentry-go"
+
 	"time"
 )
 

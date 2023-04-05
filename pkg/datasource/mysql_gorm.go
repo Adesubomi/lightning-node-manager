@@ -3,11 +3,12 @@ package datasource
 import (
 	"errors"
 	"fmt"
-	configPkg "github.com/Adesubomi/magic-ayo-api/pkg/config"
-	logPkg "github.com/Adesubomi/magic-ayo-api/pkg/log"
+	configPkg "github.com/Adesubomi/lightning-node-manager/pkg/config"
+	logPkg "github.com/Adesubomi/lightning-node-manager/pkg/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"reflect"
 )
 
@@ -16,26 +17,29 @@ const (
 	MYSQL    string = "mysql"
 )
 
-func ConnectDatabase(conf *configPkg.Config) (*gorm.DB, error) {
+func ConnectDatabase(dbConfig *configPkg.DatabaseConfig) *gorm.DB {
 
-	connection := conf.Database.Connection
+	connection := dbConfig.Connection
 	if connection == POSTGRES {
-		postgresConn, err := postgresConnection(conf)
+		postgresConn, err := postgresConnection(dbConfig)
 		if err != nil {
-			return nil, err
+			log.Fatal(err)
 		}
 		logPkg.PrintlnGreen("  ✔ PostGreSQL Connection Established")
-		return postgresConn, nil
+		return postgresConn
 	} else if connection == MYSQL {
-		mysqlConn, err := mysqlConnection(conf)
+		mysqlConn, err := mysqlConnection(dbConfig)
 		if err != nil {
-			return nil, err
+			log.Fatal(err)
 		}
 		logPkg.PrintlnGreen("  ✔ MySQL Connection Established")
-		return mysqlConn, nil
+		return mysqlConn
 	}
 
-	return nil, errors.New("could not connect to any database")
+	log.Fatal(
+		errors.New("could not connect to any database"),
+	)
+	return nil
 }
 
 func MigrateTables(dbClient *gorm.DB, entities []interface{}) {
@@ -58,14 +62,14 @@ func MigrateTables(dbClient *gorm.DB, entities []interface{}) {
 	}
 }
 
-func mysqlConnection(conf *configPkg.Config) (*gorm.DB, error) {
+func mysqlConnection(dbConfig *configPkg.DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
-		conf.Database.User,
-		conf.Database.Password,
-		conf.Database.Host,
-		conf.Database.Port,
-		conf.Database.DbName,
+		dbConfig.User,
+		dbConfig.Password,
+		dbConfig.Host,
+		dbConfig.Port,
+		dbConfig.DbName,
 	)
 
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -78,14 +82,14 @@ func mysqlConnection(conf *configPkg.Config) (*gorm.DB, error) {
 	return database, nil
 }
 
-func postgresConnection(conf *configPkg.Config) (*gorm.DB, error) {
+func postgresConnection(dbConfig *configPkg.DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=Africa/Lagos",
-		conf.Database.Host,
-		conf.Database.User,
-		conf.Database.Password,
-		conf.Database.DbName,
-		conf.Database.Port,
+		dbConfig.Host,
+		dbConfig.User,
+		dbConfig.Password,
+		dbConfig.DbName,
+		dbConfig.Port,
 	)
 
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

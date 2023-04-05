@@ -2,18 +2,19 @@ package datasource
 
 import (
 	"fmt"
-	configPkg "github.com/Adesubomi/magic-ayo-api/pkg/config"
-	logPkg "github.com/Adesubomi/magic-ayo-api/pkg/log"
+	configPkg "github.com/Adesubomi/lightning-node-manager/pkg/config"
+	logPkg "github.com/Adesubomi/lightning-node-manager/pkg/log"
 	"github.com/go-redis/redis"
+	"log"
 )
 
-func connectByString(conf *configPkg.Config) (*redis.Client, error) {
+func connectByString(redisConf *configPkg.RedisConfig) (*redis.Client, error) {
 	options, err := redis.ParseURL(fmt.Sprintf(
 		"rediss://%v:%v@%v:%v",
-		conf.Redis.User,
-		conf.Redis.Password,
-		conf.Redis.Host,
-		conf.Redis.Port,
+		redisConf.User,
+		redisConf.Password,
+		redisConf.Host,
+		redisConf.Port,
 	))
 
 	if err != nil {
@@ -23,41 +24,43 @@ func connectByString(conf *configPkg.Config) (*redis.Client, error) {
 	return redis.NewClient(options), nil
 }
 
-func connectByOptions(conf *configPkg.Config) (*redis.Client, error) {
+func connectByOptions(redisConf *configPkg.RedisConfig) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Network: "",
 		Addr: fmt.Sprintf(
 			"%v:%v", // localhost:6379
-			conf.Redis.Host,
-			conf.Redis.Port,
+			redisConf.Host,
+			redisConf.Port,
 		),
-		Password: conf.Redis.Password,
+		Password: redisConf.Password,
 		DB:       0,
 	}), nil
 }
 
-func RedisConnection(conf *configPkg.Config) (*redis.Client, error) {
+func RedisConnection(redisConf *configPkg.RedisConfig) *redis.Client {
 	var client *redis.Client
 	var err error
 
-	if conf.Redis.User != "" {
-		client, err = connectByString(conf)
+	if redisConf.User != "" {
+		client, err = connectByString(redisConf)
 	} else {
-		client, err = connectByOptions(conf)
+		client, err = connectByOptions(redisConf)
 	}
 
 	if err != nil {
 		msg := fmt.Sprintf(" ?? Could not connect to Redis: %v\n", err)
 		logPkg.PrintlnRed(msg)
-		return nil, err
+		log.Fatal(err)
+		return nil
 	}
 
 	if _, err = client.Ping().Result(); err != nil {
 		msg := fmt.Sprintf(" ?? Could not connect to Redis because: %v\n", err)
 		logPkg.PrintlnRed(msg)
-		return client, err
+		log.Fatal(err)
+		return nil
 	}
 
 	logPkg.PrintlnGreen("  ✔ Redis Connection Established")
-	return client, nil
+	return client
 }
